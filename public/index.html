@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYD Resume Screening Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/groq-api.js"></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body class="h-full">
+    <div id="app" class="h-full w-full overflow-auto">
+        <header class="px-6 py-5 flex items-center justify-between border-b border-[#1e293b]">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#6d28d9]">
+                    <i data-lucide="bot" class="w-5 h-5 text-[#e9d5ff]"></i>
+                </div>
+                <div>
+                    <h1 id="page-title" class="text-lg font-bold">Resume Screening Agent</h1>
+                    <p class="text-xs flex items-center gap-1.5 text-[#64748b]">
+                        <span class="inline-block w-2 h-2 rounded-full pulse-dot bg-[#22c55e]"></span> 
+                        Active
+                        <span class="text-[#334155] mx-0.5">|</span>
+                        <button onclick="openProfileSwitcher()" id="header-job" class="mono text-[#a78bfa] hover:text-[#c4b5fd] hover:underline cursor-pointer transition">Default</button>
+                        <span class="text-[#334155] mx-0.5">·</span>
+                        <span id="header-company" class="text-[#64748b]">Drone Yodhas</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openRequirements()" class="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 bg-[#1e293b] border border-[#334155] text-[#cbd5e1] hover:bg-[#334155] transition">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Requirements
+                </button>
+                <input type="file" id="resume-upload-files" accept=".pdf,.doc,.docx,.txt" multiple class="hidden" onchange="handleFileUpload(event)">
+                <input type="file" id="resume-upload-folder" webkitdirectory class="hidden" onchange="handleFileUpload(event)">
+                <div class="relative">
+                    <button onclick="toggleUploadMenu()" id="upload-btn" class="px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 bg-[#6d28d9] text-white hover:bg-[#7c3aed] transition">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Screen Resumes <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i>
+                    </button>
+                    <div id="upload-menu" class="hidden absolute right-0 mt-1 w-48 rounded-lg bg-[#1e293b] border border-[#334155] shadow-xl z-50 overflow-hidden">
+                        <button onclick="document.getElementById('resume-upload-files').click(); hideUploadMenu();" class="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-[#334155] transition text-[#cbd5e1]">
+                            <i data-lucide="file-plus" class="w-4 h-4 text-[#a78bfa]"></i> Upload Files
+                        </button>
+                        <button onclick="document.getElementById('resume-upload-folder').click(); hideUploadMenu();" class="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-[#334155] transition text-[#cbd5e1]">
+                            <i data-lucide="folder-plus" class="w-4 h-4 text-[#a78bfa]"></i> Upload Folder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="stats-bar" class="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-4">
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Total Screened</p>
+                <p id="stat-total" class="text-2xl font-bold mono">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Accepted</p>
+                <p id="stat-accepted" class="text-2xl font-bold mono text-[#22c55e]">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Declined</p>
+                <p id="stat-declined" class="text-2xl font-bold mono text-[#ef4444]">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Avg Match</p>
+                <p id="stat-avg" class="text-2xl font-bold mono text-[#a78bfa]">-</p>
+            </div>
+        </div>
+
+        <div class="px-6 flex items-center gap-2 mb-3 flex-wrap">
+            <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#6d28d9] text-white">All</button>
+            <button onclick="setFilter('accepted')" id="filter-accepted" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1e293b] text-[#64748b] border border-[#334155]">Accepted</button>
+            <button onclick="setFilter('declined')" id="filter-declined" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1e293b] text-[#64748b] border border-[#334155]">Declined</button>
+            <div class="ml-auto flex gap-2">
+                <button onclick="sendBulkRejectionEmails()" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-red-900/40 text-red-300 hover:bg-red-900 transition">
+                    <i data-lucide="mail-x" class="w-3 h-3"></i> Email All Declined
+                </button>
+                <button onclick="sendBulkAcceptanceEmails()" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-green-900/40 text-green-300 hover:bg-green-900 transition">
+                    <i data-lucide="mail-check" class="w-3 h-3"></i> Email All Accepted
+                </button>
+                <button onclick="clearAllData()" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-[#1e293b] text-[#64748b] border border-[#334155] hover:text-red-400 hover:border-red-900 transition">
+                    <i data-lucide="trash" class="w-3 h-3"></i> Clear All
+                </button>
+            </div>
+        </div>
+
+        <div id="candidate-list" class="px-6 pb-6 space-y-3"></div>
+        <div id="empty-state" class="px-6 pb-6 text-center py-16 hidden">
+            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-[#1e293b]">
+                <i data-lucide="inbox" class="w-8 h-8 text-[#334155]"></i>
+            </div>
+            <p class="text-sm font-medium text-[#64748b]">No resumes screened yet</p>
+        </div>
+
+        <!-- Requirements Modal -->
+        <div id="modal-requirements" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 hidden">
+            <div class="w-full max-w-lg rounded-2xl p-6 bg-[#1e293b] border border-[#334155]">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-lg font-bold">Job Requirements</h2>
+                    <button onclick="closeModals()"><i data-lucide="x" class="w-5 h-5 text-[#64748b]"></i></button>
+                </div>
+
+                <!-- Saved Profiles -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold mb-2 text-[#94a3b8]">Saved Profiles</label>
+                    <div id="profile-list" class="space-y-1.5 max-h-32 overflow-y-auto mb-2">
+                        <p class="text-xs text-[#475569]">No saved profiles yet</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="profile-name-input" type="text" class="flex-1 rounded-lg px-3 py-2 text-sm bg-[#0f172a] border border-[#334155]" placeholder="Profile name">
+                        <button onclick="saveCurrentAsProfile()" class="px-3 py-2 rounded-lg text-xs font-bold bg-[#6d28d9] text-white hover:bg-[#7c3aed] transition flex items-center gap-1">
+                            <i data-lucide="save" class="w-3 h-3"></i> Save As
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-[#334155] mb-4">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Required Skills (comma-separated)</label>
+                        <input id="req-skills" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="React, TypeScript">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Min. Experience (years)</label>
+                        <input id="req-exp" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Threshold (%)</label>
+                        <input id="req-threshold" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]">
+                    </div>
+                    <button onclick="saveRequirements()" class="w-full py-2.5 rounded-lg text-sm font-bold bg-[#6d28d9] hover:bg-[#7c3aed]">Save & Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Candidate Modal -->
+        <div id="modal-add-candidate" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 hidden">
+            <div class="w-full max-w-lg rounded-2xl p-6 bg-[#1e293b] border border-[#334155]">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-lg font-bold">Add Candidate</h2>
+                    <button onclick="closeModals()"><i data-lucide="x" class="w-5 h-5 text-[#64748b]"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Candidate Name</label>
+                        <input id="cand-name" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="Jane Doe">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Skills (comma-separated)</label>
+                        <input id="cand-skills" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="Java, Python, C++">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Years of Experience</label>
+                        <input id="cand-exp" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="3">
+                    </div>
+                    <button onclick="submitCandidate()" class="w-full py-2.5 rounded-lg text-sm font-bold bg-[#6d28d9] hover:bg-[#7c3aed]">Screen Candidate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Viewer Modal -->
+        <div id="modal-resume-viewer" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 hidden">
+            <div class="w-full max-w-2xl max-h-[80vh] rounded-2xl bg-[#1e293b] border border-[#334155] flex flex-col">
+                <div class="flex justify-between items-center p-5 border-b border-[#334155]">
+                    <h2 id="resume-viewer-title" class="text-sm font-bold truncate"></h2>
+                    <button onclick="closeModals()"><i data-lucide="x" class="w-5 h-5 text-[#64748b]"></i></button>
+                </div>
+                <pre id="resume-viewer-content" class="p-5 text-xs text-[#cbd5e1] leading-relaxed overflow-y-auto whitespace-pre-wrap font-[DM_Sans,sans-serif]"></pre>
+            </div>
+        </div>
+
+        <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl text-sm font-semibold z-50 hidden bg-[#22c55e] text-white"></div>
+    </div>
+</body>
+</html>
