@@ -1,7 +1,7 @@
 {
   "name": "resume-screening-agent",
   "version": "1.0.0",
-  "description": "AI-powered Resume Screening Agent using Groq",
+  "description": "AI-powered Resume Screening Agent using Featherless AI",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,7 +10,7 @@
     "resume",
     "screening",
     "ai",
-    "groq"
+    "featherless"
   ],
   "license": "MIT",
   "dependencies": {
