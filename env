@@ -1,0 +1,12 @@
+FEATHERLESS_API_KEY=your-featherless-api-key-here
+FEATHERLESS_MODEL=Qwen/Qwen2.5-7B-Instruct
+
+# Email Configuration (Gmail example)
+# For Gmail: use smtp.gmail.com, port 587, and an App Password (not your regular password)
+# Generate App Password: Google Account → Security → 2-Step Verification → App passwords
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=anirudhswamy11@gmail.com
+SMTP_PASS=dsvvsnxqmhbpdpkk
+FROM_EMAIL=anirudhswamy11@gmail.com
+COMPANY_NAME=Drone Yodhas
