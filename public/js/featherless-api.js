@@ -1,28 +1,28 @@
 // ============================================
-// GROQ API CONFIGURATION
+// FEATHERLESS AI API CONFIGURATION
 // ============================================
 // API key and model are loaded from .env via the server.
 // To change them, edit the .env file in the project root.
 
-let GROQ_API_KEY = '';
-let GROQ_MODEL = 'llama-3.1-8b-instant';
+let FEATHERLESS_API_KEY = '';
+let FEATHERLESS_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
 
 // Fetch config from server on load
-const groqConfigReady = (async function loadGroqConfig() {
+const featherlessConfigReady = (async function loadFeatherlessConfig() {
     try {
         const res = await fetch('/api/config');
         const config = await res.json();
-        GROQ_API_KEY = config.apiKey || '';
-        GROQ_MODEL = config.model || 'llama-3.1-8b-instant';
+        FEATHERLESS_API_KEY = config.apiKey || '';
+        FEATHERLESS_MODEL = config.model || 'Qwen/Qwen2.5-7B-Instruct';
     } catch (e) {
         console.error('Failed to load API config:', e);
     }
 })();
 
 // ============================================
-// GROQ API CALL
+// FEATHERLESS AI API CALL
 // ============================================
-async function callGroqAPI(resumeText) {
+async function callFeatherlessAPI(resumeText) {
     const prompt = `Analyze this resume text carefully. Extract ALL of the following:
 - name: The candidate's full name
 - email: Look for patterns like someone@domain.com anywhere in the text. Search thoroughly.
@@ -38,14 +38,14 @@ Exact format: {"name": "Jane Doe", "email": "jane@example.com", "phone": "+12345
 Resume Text:
 ${resumeText}`;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.featherless.ai/v1/chat/completions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${GROQ_API_KEY}`
+            "Authorization": `Bearer ${FEATHERLESS_API_KEY}`
         },
         body: JSON.stringify({
-            model: GROQ_MODEL,
+            model: FEATHERLESS_MODEL,
             messages: [
                 { role: "system", content: "You are a resume parser. Return ONLY valid JSON, no markdown, no explanation." },
                 { role: "user", content: prompt }
@@ -59,11 +59,11 @@ ${resumeText}`;
 
     if (!response.ok) {
         const errMsg = data?.error?.message || JSON.stringify(data);
-        throw new Error(`Groq API error (${response.status}): ${errMsg}`);
+        throw new Error(`Featherless API error (${response.status}): ${errMsg}`);
     }
 
     if (!data.choices || !data.choices[0]) {
-        throw new Error("Invalid Groq response: " + JSON.stringify(data));
+        throw new Error("Invalid Featherless response: " + JSON.stringify(data));
     }
 
     let rawText = data.choices[0].message.content;
