@@ -1,0 +1,19 @@
+{
+  "name": "resume-screening-agent",
+  "version": "1.0.0",
+  "description": "AI-powered Resume Screening Agent using Groq",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "resume",
+    "screening",
+    "ai",
+    "groq"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "nodemailer": "^8.0.4"
+  }
+}

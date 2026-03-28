@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DYD Resume Screening Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="public/css/styles.css">
+    <script type="module" src="public/main.js" defer></script>
+</head>
+<body class="h-full">
+    <div id="app" class="h-full w-full overflow-auto">
+        <header class="px-6 py-5 flex items-center justify-between border-b border-[#1e293b]">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#6d28d9]">
+                    <i data-lucide="bot" class="w-5 h-5 text-[#e9d5ff]"></i>
+                </div>
+                <div>
+                    <h1 id="page-title" class="text-lg font-bold">Resume Screening Agent</h1>
+                    <p class="text-xs flex items-center gap-1.5 text-[#64748b]">
+                        <span class="inline-block w-2 h-2 rounded-full pulse-dot bg-[#22c55e]"></span> 
+                        Agent Active <span id="header-job" class="mono text-[#a78bfa]">Senior Frontend Developer</span> 
+                        <span id="header-company">at Drone Yodhas</span>
+                    </p>
+                </div>
+            </div>
+            <div id="modal-add-candidate" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 hidden">
+            <div class="w-full max-w-lg rounded-2xl p-6 bg-[#1e293b] border border-[#334155]">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-lg font-bold">Add Candidate</h2>
+                    <button onclick="closeModals()"><i data-lucide="x" class="w-5 h-5 text-[#64748b]"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Candidate Name</label>
+                        <input id="cand-name" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="Jane Doe">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Skills (comma-separated)</label>
+                        <input id="cand-skills" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="Java, Python, C++">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Years of Experience</label>
+                        <input id="cand-exp" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="3">
+                    </div>
+                    <button onclick="submitCandidate()" class="w-full py-2.5 rounded-lg text-sm font-bold bg-[#6d28d9] hover:bg-[#7c3aed]">Screen Candidate</button>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+    <button onclick="openRequirements()" class="px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 bg-[#1e293b] border border-[#334155] text-[#cbd5e1] hover:bg-[#334155] transition">
+        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i> Requirements
+    </button>
+    
+    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx,.txt" multiple class="hidden" onchange="handleFileUpload(event)">
+    
+    <button onclick="document.getElementById('resume-upload').click()" class="px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5 bg-[#6d28d9] text-white hover:bg-[#7c3aed] transition">
+        <i data-lucide="plus" class="w-4 h-4"></i> Screen Resumes
+    </button>
+</div>
+        </header>
+
+        <div id="stats-bar" class="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-4">
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Total Screened</p>
+                <p id="stat-total" class="text-2xl font-bold mono">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Accepted</p>
+                <p id="stat-accepted" class="text-2xl font-bold mono text-[#22c55e]">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Declined</p>
+                <p id="stat-declined" class="text-2xl font-bold mono text-[#ef4444]">0</p>
+            </div>
+            <div class="rounded-xl p-4 bg-[#1e293b] border border-[#334155]">
+                <p class="text-xs font-medium mb-1 text-[#64748b]">Avg Match</p>
+                <p id="stat-avg" class="text-2xl font-bold mono text-[#a78bfa]">-</p>
+            </div>
+        </div>
+
+        <div class="px-6 flex gap-2 mb-3">
+            <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#6d28d9] text-white">All</button>
+            <button onclick="setFilter('accepted')" id="filter-accepted" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1e293b] text-[#64748b] border border-[#334155]">Accepted</button>
+            <button onclick="setFilter('declined')" id="filter-declined" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#1e293b] text-[#64748b] border border-[#334155]">Declined</button>
+        </div>
+
+        <div id="candidate-list" class="px-6 pb-6 space-y-3"></div>
+        <div id="empty-state" class="px-6 pb-6 text-center py-16 hidden">
+            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-[#1e293b]">
+                <i data-lucide="inbox" class="w-8 h-8 text-[#334155]"></i>
+            </div>
+            <p class="text-sm font-medium text-[#64748b]">No resumes screened yet</p>
+        </div>
+
+        <div id="modal-requirements" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/70 hidden">
+            <div class="w-full max-w-lg rounded-2xl p-6 bg-[#1e293b] border border-[#334155]">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-lg font-bold">Job Requirements</h2>
+                    <button onclick="closeModals()"><i data-lucide="x" class="w-5 h-5 text-[#64748b]"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Required Skills (comma-separated)</label>
+                        <input id="req-skills" type="text" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]" placeholder="React, TypeScript">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Min. Experience (years)</label>
+                        <input id="req-exp" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5 text-[#94a3b8]">Threshold (%)</label>
+                        <input id="req-threshold" type="number" class="w-full rounded-lg px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155]">
+                    </div>
+                    <button onclick="saveRequirements()" class="w-full py-2.5 rounded-lg text-sm font-bold bg-[#6d28d9] hover:bg-[#7c3aed]">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl text-sm font-semibold z-50 hidden bg-[#22c55e] text-white"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
