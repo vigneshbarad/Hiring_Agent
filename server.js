@@ -33,8 +33,8 @@ const server = http.createServer((req, res) => {
     if (req.url === '/api/config') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-            apiKey: process.env.GROQ_API_KEY || '',
-            model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
+            apiKey: process.env.FEATHERLESS_API_KEY || '',
+            model: process.env.FEATHERLESS_MODEL || 'Qwen/Qwen2.5-7B-Instruct'
         }));
         return;
     }
