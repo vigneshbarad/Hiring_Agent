@@ -2,7 +2,7 @@
 
 AI-powered resume screening tool that parses resumes, scores candidates against job requirements, and sends acceptance/rejection emails — all from a single dashboard.
 
-Built with **Node.js**, **Groq AI (LLaMA 3.1)**, **PDF.js**, **Mammoth.js**, and **Nodemailer**.
+Built with **Node.js**, **Featherless AI (Qwen 2.5)**, **PDF.js**, **Mammoth.js**, and **Nodemailer**.
 
 ---
 
@@ -28,7 +28,7 @@ hackathon/
 ├── public/                # Frontend (served by server.js)
 │   ├── index.html         # Main UI
 │   ├── css/styles.css     # Custom styles
-│   ├── js/groq-api.js     # Groq AI API communication
+│   ├── js/featherless-api.js     # Featherless AI API communication
 │   ├── js/app.js          # App logic (upload, parse, render, email)
 │   └── main.js            # Entry point (module loader)
 └── resumes/               # Place sample resumes here
@@ -39,7 +39,7 @@ hackathon/
 ## Prerequisites
 
 - **Node.js** v16 or higher — [Download here](https://nodejs.org/)
-- **Groq API Key** — [Get one free at console.groq.com](https://console.groq.com/)
+- **Featherless API Key** — [Get one at featherless.ai](https://featherless.ai/)
 - **Gmail App Password** (for email feature) — see [Email Setup](#email-setup) below
 
 ---
@@ -65,8 +65,8 @@ This installs `nodemailer` (the only dependency).
 Create a `.env` file in the project root (or edit the existing one):
 
 ```env
-GROQ_API_KEY=your-groq-api-key-here
-GROQ_MODEL=llama-3.1-8b-instant
+FEATHERLESS_API_KEY=your-featherless-api-key-here
+FEATHERLESS_MODEL=Qwen/Qwen2.5-7B-Instruct
 
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -122,7 +122,7 @@ To send emails via Gmail:
 
 | Endpoint           | Method | Description                          |
 |--------------------|--------|--------------------------------------|
-| `/api/config`      | GET    | Returns Groq API key and model name  |
+| `/api/config`      | GET    | Returns Featherless API key and model name  |
 | `/api/send-email`  | POST   | Sends acceptance/rejection email     |
 
 ---
@@ -132,7 +132,7 @@ To send emails via Gmail:
 | Component     | Technology                        |
 |---------------|-----------------------------------|
 | Server        | Node.js (vanilla HTTP)            |
-| AI Model      | Groq — LLaMA 3.1 8B Instant      |
+| AI Model      | Featherless AI — Qwen 2.5 7B Instruct      |
 | PDF Parsing   | PDF.js (CDN)                      |
 | DOCX Parsing  | Mammoth.js (CDN)                  |
 | Email         | Nodemailer + Gmail SMTP           |
@@ -148,7 +148,7 @@ To send emails via Gmail:
 | Port 3000 already in use       | Kill the process: `npx kill-port 3000` then restart             |
 | Gmail 535 auth error           | Use an App Password, not your regular password                  |
 | PDF not reading                | Make sure the PDF has selectable text (not scanned images)      |
-| AI returns empty results       | Check your Groq API key in `.env`                               |
+| AI returns empty results       | Check your Featherless API key in `.env`                               |
 | Icons not showing              | Hard refresh the browser (`Ctrl + Shift + R`)                   |
 
 ---
