@@ -142,7 +142,7 @@ server.listen(PORT, () => {
     console.log('  Project structure:');
     console.log('  public/index.html    — Main UI');
     console.log('  public/js/app.js     — App logic');
-    console.log('  public/js/groq-api.js — Groq AI config');
+    console.log('  public/js/featherless-api.js — Featherless AI config');
     console.log('  public/css/styles.css — Styling\n');
 
     // Open in default browser (Windows)
